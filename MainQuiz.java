@@ -1,11 +1,13 @@
 //Rashida Kapadia, Shrivarshini Ganeshkumar, Aditi Chaugule
 //Dec 4th, 2025
 
-//Single Threaded
+// Multi Threaded
 import java.io.*;
-import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-public class MainQuiz {
+public class MainQuiz { // FINALLY FINAL
 
     public static void main(String[] args) {
 
@@ -15,15 +17,26 @@ public class MainQuiz {
         String warAndPeaceOutput = "war_and_peace_upper.txt";
         String taleOfTwoCitiesOutput = "tale_of_two_cities_upper.txt";
 
+        // Start timer (same as single-threaded)
         long startTime = System.currentTimeMillis();
 
-        // Single-threaded modification AND printing
-        convertFileToUppercase(warAndPeaceInput, warAndPeaceOutput);
-        convertFileToUppercase(taleOfTwoCitiesInput, taleOfTwoCitiesOutput);
+        // Thread pool of 2 threads → both books processed in parallel
+        ExecutorService executor = Executors.newFixedThreadPool(2);
 
+        executor.submit(() -> convertFileToUppercase(warAndPeaceInput, warAndPeaceOutput));
+        executor.submit(() -> convertFileToUppercase(taleOfTwoCitiesInput, taleOfTwoCitiesOutput));
+
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // End timer
         long endTime = System.currentTimeMillis();
 
-        System.out.println("Finished converting both books.");
+        System.out.println("Finished multithreaded conversion (efficient).");
         System.out.println("Total time (ms): " + (endTime - startTime));
         System.out.println("Total time (seconds): " + ((endTime - startTime) / 1000.0));
     }
@@ -36,18 +49,14 @@ public class MainQuiz {
 
             while ((line = reader.readLine()) != null) {
 
-                // extremely inefficient string building
-                String upperLine = "";
+                // Efficient string capitalization
+                StringBuilder sb = new StringBuilder(line.length());
                 for (int i = 0; i < line.length(); i++) {
-                    upperLine = upperLine + Character.toUpperCase(line.charAt(i));
+                    sb.append(Character.toUpperCase(line.charAt(i)));
                 }
 
-                // write to file
-                writer.write(upperLine);
+                writer.write(sb.toString());
                 writer.newLine();
-
-                // print it to the console (slow on purpose)
-                System.out.println(upperLine);
             }
 
         } catch (IOException e) {
@@ -56,3 +65,7 @@ public class MainQuiz {
         }
     }
 }
+
+
+
+
